@@ -108,9 +108,12 @@ fn get_number_substrings(line: &str, list_nums: &mut Vec<(i32, i32)>, str_number
 {
     for str_num in str_numbers
     {
-        if let Some(index) = line.find(str_num)
+        let found_indexes: Vec<usize> = line.match_indices(str_num)
+                                            .map(|(index, _)| index)
+                                            .collect();
+        for found_idx in found_indexes
         {
-            list_nums.push((string_to_int(str_num).unwrap(), index as i32));
+            list_nums.push((string_to_int(str_num).unwrap(), found_idx as i32))
         }
     } 
 }
@@ -176,18 +179,16 @@ fn get_num_from_line_v2(line: &str) -> Option<i32>
                                                .unwrap()// De lijst met het eerste getal
                                                .iter()// de waarde die hoort bij de eerste index
                                                .min_by_key(|x| x.1)
-                                               .unwrap().0;
+                                               .unwrap().0;// .0, want (waarde, index)
     let last = &lists_with_nums_combined.get(listnr_max_and_idx.0 as usize)
                                               .unwrap()// De lijst met het laaste getal
                                               .iter()// de waarde die hoort bij de laatste index
                                               .max_by_key(|x| x.1)
-                                              .unwrap().0;
+                                              .unwrap().0;// .0, want (waarde, index)
 
     let number = (first.to_string() + last.to_string().as_str()).parse::<i32>().unwrap();
 
     return Some(number);
-
-
 }
 
 pub fn day_one_part_one(filename: &str) -> i32
