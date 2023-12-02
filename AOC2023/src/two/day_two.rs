@@ -70,14 +70,13 @@ fn return_possible_game_id(line: &str) -> Option<i32>
         
         println!("Max R {}, Max G {}, Max B {}", max_amount_red_detected, max_amount_green_detected, max_amount_blue_detected);
 
-        if max_amount_red_detected <= max_red
-        && max_amount_green_detected <= max_green
-        && max_amount_blue_detected <= max_blue
-        {
-            println!("Game: {}", game_id);
-            return Some(game_id.parse::<i32>().unwrap());
-        }
-        println!(" ");
+        if max_amount_red_detected == 0 { max_amount_red_detected = 1; }
+        if max_amount_green_detected == 0 { max_amount_green_detected = 1; }
+        if max_amount_blue_detected == 0 { max_amount_blue_detected = 1; }
+
+        let cube_power = max_amount_red_detected * max_amount_green_detected * max_amount_blue_detected;
+        println!("Cube power: {}\n", cube_power);
+        return Some(cube_power); //part two
     }
     else
     {
@@ -100,4 +99,19 @@ pub fn day_two_part_one(filename: &str) -> i32
         }
     }
     return sum_impossible_game_ids;
+}
+
+pub fn day_two_part_two(filename: &str) -> i32
+{
+    let lines = filereader::read_lines(filename).unwrap();
+
+    let mut sum_cubes_power = 0;
+    for line in lines
+    {
+        if let Some(power) = return_possible_game_id(line.unwrap().as_str())
+        {
+            sum_cubes_power += power;
+        }
+    }
+    return sum_cubes_power;
 }
