@@ -5,7 +5,6 @@ from str import *
 def get_amount_winning_possibilities(race_time, race_distance_record):
     amount_winning_possibilities = 0
 
-    driven_distance = 0
     for mm_p_s in range(race_time):
         time_left = race_time - mm_p_s
         if mm_p_s * time_left > race_distance_record:
@@ -23,8 +22,6 @@ def day_6_part_2(filename):
 
     print(f"Race time {race_time}")
     print(f"Race distance {race_distance}")
-
-    millimeter_per_second = 0
 
     winning_possibilities_all_rounds = []
 
