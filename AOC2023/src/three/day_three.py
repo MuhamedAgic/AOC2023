@@ -215,6 +215,21 @@ def find_part_numbers_w_idx_v2(filename):
                 if has_sticky_symbol(lines, idx, idy):
                     #print(f"Has sticky! {lines[idx][idy]} line {idx} index {idy}")
                     save_curr_num = True
+            elif c.isdigit() and idy == (len(line) - 1):
+                if current_number_str != "":
+                    if save_curr_num:
+                        current_number = int(current_number_str)
+
+                        print(f"{current_number}, ")
+                        start_num_idx = idy - len(current_number_str)
+
+                        result.append((current_number, start_num_idx))
+                        result_line.append((current_number, start_num_idx))
+                        result_sum += current_number
+
+                        save_curr_num = False
+
+                    current_number_str = ""
             else:
                 if current_number_str != "":
                     if save_curr_num:
