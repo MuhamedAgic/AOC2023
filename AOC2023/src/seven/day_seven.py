@@ -225,7 +225,7 @@ def create_best_hand_from(hand):
     # loop all possible cards which J can be, check for highest rank
     best_possible_hand = deepcopy(hand)
     best_handtype = hand.handtype
-    for idx, card in enumerate(cards): # loop door alle mogelijke kaarten
+    for card in cards: # loop door alle mogelijke kaarten
         #print(cards[idx])
         # vervang J met elke andere kaart en kijken welke hand het best is
         possibly_better_hand = deepcopy(hand)
@@ -235,6 +235,8 @@ def create_best_hand_from(hand):
         if possibly_better_hand.handtype.value >= best_possible_hand.handtype.value: # >=, want dan heb je een hogere kaart
             best_possible_hand = possibly_better_hand
 
+    # pas alleen handtype aan, niet de cards!
+    best_possible_hand.cards = hand.cards
     return best_possible_hand
 
 
@@ -305,3 +307,6 @@ print(f"Part two {ans2}")
 #Before J check Cards: T6J4J - Rank: 0 - HandType: HandType.ONE_PAIR:2 - bid: 400
 #After J check Cards: T6444 - Rank: 0 - HandType: HandType.THREE_OF_A_KIND:4 - bid: 400
 #Fout, moet T6T4T zijn, 3 of a kind maar hogere score
+
+# check J waarde vergelijking
+# pas alleen handtype aan, niet de cards!
