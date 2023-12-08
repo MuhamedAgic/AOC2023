@@ -20,7 +20,7 @@ class Hand():
         self.rank = 0
 
     def __str__(self):
-        return f'Cards: {self.cards}, Rank: {self.rank}, HandType: {self.handtype}, bid: {self.bid}'
+        return f'Cards: {self.cards} - Rank: {self.rank} - HandType: {self.handtype}:{self.handtype.value} - bid: {self.bid}'
 
 def has_x_different_amount_cards(hand, amount_diverse_cards):
     # "23333" geeft 2 terug, "43257" geeft 5 terug (5 distinct waarden in de set)
@@ -131,26 +131,25 @@ def is_a_higher_than_b(a, b):
         elif card_to_determine_rank < card_to_cmp_with:
             return '<'
         else:
-            return '-'
+            continue
 
 def get_rank(hand_to_check, hands):
-    rank = 0 # misschien 1
+    rank = 1 # lowest rank
     for hand in hands:
+        #print(f"Checking against ... {hand}")
         if hand_to_check.handtype.value > hand.handtype.value:
-            print(f"{hand_to_check} handtype {hand_to_check.handtype.value} > {hand} handtype {hand.handtype.value} RANK")
+            #print(f"{hand_to_check} \nHAS HIGHER RANK THAN \n{hand}\n")
             rank += 1
         elif hand_to_check.handtype.value < hand.handtype.value:
-            print(f"{hand_to_check} handtype {hand_to_check.handtype.value} < {hand} handtype {hand.handtype.value} RANK")
-            rank -= 1
+            continue
+            #print(f"{hand_to_check} \nHAS LOWER RANK THAN \n{hand}\n")
         else: # als handtype gelijk is (2x full house bijv)
             if is_a_higher_than_b(hand_to_check, hand) == '>':
-                print(f"{hand_to_check} > {hand} FIRST MORE POWERFULL CARD")
+                #print(f"{hand_to_check} \nFIRST CARD MORE POWERFUL \n{hand}\n")
                 rank += 1
-            elif is_a_higher_than_b(hand_to_check, hand) == '<':
-                print(f"{hand_to_check} < {hand} FIRST MORE POWERFULL CARD")
-                rank -= 1                
 
-    return rank
+    #print(f"Calculated rank {rank}\n")
+    hand_to_check.rank = rank
 
 def day_seven_part_one(filename):
     with open(filename, 'r') as f:
@@ -168,19 +167,25 @@ def day_seven_part_one(filename):
 
             hands.append(current_hand)
 
+        print("")
+
         for hand in hands:
-            hand.rank = get_rank(hand, hands)
-            print(f"{hand}")
+            get_rank(hand, hands)
         
+        print("")
+
         rank_times_bids = []
         for hand in hands:
+            print(f"{hand}")
             rank_times_bids.append(hand.rank * hand.bid)
 
+        print("")
+
         print(rank_times_bids)
-        return reduce(mul, rank_times_bids, 1) 
+        return sum(rank_times_bids)
 
 
-filename = "D:/git/magic/aoc2023/aoc2023/src/seven/example_input.txt"
+filename = "D:/git/magic/aoc2023/aoc2023/src/seven/input.txt"
 
 ans1 = day_seven_part_one(filename)
 
