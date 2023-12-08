@@ -1,6 +1,8 @@
 from enum import Enum
 from functools import reduce # python3 compatibility
 from operator import *
+from copy import deepcopy
+
 
 class HandType(Enum):
     FIVE_OF_A_KIND = 7
@@ -104,6 +106,7 @@ def get_hand_type(hand):
     else:
         return HandType.UNDEFINED
 
+#************************* PART 1 ***************************
 def special_card_to_value(special_card):
     special_cards = ['T', 'J', 'Q', 'K', 'A'] # 10, 11, 12 ...
     return special_cards.index(special_card) + 10 if special_card in special_cards else -1
@@ -148,9 +151,6 @@ def get_rank(hand_to_check, hands):
                 #print(f"{hand_to_check} \nFIRST CARD MORE POWERFUL \n{hand}\n")
                 rank += 1
 
-    #print(f"Calculated rank {rank}\n")
-    hand_to_check.rank = rank
-
 def day_seven_part_one(filename):
     with open(filename, 'r') as f:
         lines = f.readlines()
@@ -184,9 +184,124 @@ def day_seven_part_one(filename):
         print(rank_times_bids)
         return sum(rank_times_bids)
 
+#************************* PART 2 ***************************
+cards = ["J", "1", "2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A"]
+
+def special_card_to_value_part2(special_card):
+    special_cards = ['T', 'Q', 'K', 'A'] # 10, 11, 12 ...
+    if special_card == "J": # now has value 1
+        return 1
+    return special_cards.index(special_card) + 10 if special_card in special_cards else -1
+
+def get_card_val_part2(card):
+    # card is a char
+    if not card.isdigit():
+        return special_card_to_value_part2(card)
+    else:
+        return int(card)
+
+def is_a_higher_than_b_part_2(a, b):
+    for idx, c in enumerate(a.cards): # loop chars (cards)
+        card_to_determine_rank = "0"
+        card_to_cmp_with = b.cards[idx]
+
+        #print(f"c1 {type(card_to_determine_rank)} c2 {type(card_to_cmp_with)}")
+        #print(f"c1 {card_to_determine_rank} c2 {card_to_cmp_with}")
+
+        card_to_determine_rank = get_card_val_part2(c)
+        card_to_cmp_with = get_card_val_part2(card_to_cmp_with)
+
+        if card_to_determine_rank > card_to_cmp_with:
+            return True
+        elif card_to_determine_rank < card_to_cmp_with:
+            return False
+        else:
+            continue
+
+def create_best_hand_from(hand):
+    if not "J" in hand.cards:
+        return hand
+
+    # loop all possible cards which J can be, check for highest rank
+    best_possible_hand = deepcopy(hand)
+    best_handtype = hand.handtype
+    for idx, card in enumerate(cards): # loop door alle mogelijke kaarten
+        #print(cards[idx])
+        # vervang J met elke andere kaart en kijken welke hand het best is
+        possibly_better_hand = deepcopy(hand)
+        possibly_better_hand.cards = possibly_better_hand.cards.replace("J", card)
+        #print(f"Trying {possibly_better_hand.cards}")
+        possibly_better_hand.handtype = get_hand_type(possibly_better_hand)
+        if possibly_better_hand.handtype.value >= best_possible_hand.handtype.value: # >=, want dan heb je een hogere kaart
+            best_possible_hand = possibly_better_hand
+
+    return best_possible_hand
+
+
+def get_rank_part_2(hand_to_check, hands):
+    rank = 1 # lowest rank
+    for hand in hands:
+        #print(f"Checking against ... {hand}")
+        if hand_to_check.handtype.value > hand.handtype.value:
+            #print(f"{hand_to_check} \nHAS HIGHER RANK THAN \n{hand}\n")
+            rank += 1
+        elif hand_to_check.handtype.value < hand.handtype.value:
+            continue
+            #print(f"{hand_to_check} \nHAS LOWER RANK THAN \n{hand}\n")
+        else: # als handtype gelijk is (2x full house bijv)
+            if is_a_higher_than_b_part_2(hand_to_check, hand):
+                #print(f"{hand_to_check} \nFIRST CARD MORE POWERFUL \n{hand}\n")
+                rank += 1
+
+    #print(f"Calculated rank {rank}\n")
+    hand_to_check.rank = rank
+
+def day_seven_part_two(filename):
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+
+        hands = []
+        for line in lines:
+            hand, bid = [str(value) for value in line.split()]
+            current_hand = Hand()
+            current_hand.cards = hand
+            current_hand.handtype = get_hand_type(current_hand)
+            current_hand.bid = int(bid)
+
+            print(f"Before J check {current_hand}")
+            current_hand = create_best_hand_from(current_hand)
+            print(f"After J check {current_hand}\n")
+            hands.append(current_hand)
+
+        print("")
+
+        for hand in hands:
+            get_rank_part_2(hand, hands)
+        
+        print("")
+
+        rank_times_bids = []
+        for hand in hands:
+            #print(f"{hand}")
+            rank_times_bids.append(hand.rank * hand.bid)
+
+        print("")
+
+        print(rank_times_bids)
+        return sum(rank_times_bids)
 
 filename = "D:/git/magic/aoc2023/aoc2023/src/seven/input.txt"
 
-ans1 = day_seven_part_one(filename)
+#ans1 = day_seven_part_one(filename)
+ans2 = day_seven_part_two(filename)
 
-print(f"Part one {ans1}")
+#print(f"Part one {ans1}")
+print(f"Part two {ans2}")
+
+# 249456808 te laag
+# 249801852 te laag
+# 249911700 te hoog
+
+#Before J check Cards: T6J4J - Rank: 0 - HandType: HandType.ONE_PAIR:2 - bid: 400
+#After J check Cards: T6444 - Rank: 0 - HandType: HandType.THREE_OF_A_KIND:4 - bid: 400
+#Fout, moet T6T4T zijn, 3 of a kind maar hogere score
