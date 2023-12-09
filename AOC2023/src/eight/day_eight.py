@@ -1,5 +1,5 @@
 import sys
-sys.setrecursionlimit(2000000) # wanted to set on 65 duizend miljoen
+sys.setrecursionlimit(90000000) # wanted to set on 65 duizend miljoen
 
 class Node:
     def __init__(self):
@@ -10,6 +10,7 @@ class Node:
     def __str__(self):
         return f"You are here: '{self.location}', left: '{self.left}', right: '{self.right}'"
 
+#************************* PART ONE ********************************
 
 def goto_zzz(steps_to_take, nodes, current_node_loc="AAA", at_current_step=0, steps_taken=0):
     if current_node_loc == "ZZZ":
@@ -20,7 +21,7 @@ def goto_zzz(steps_to_take, nodes, current_node_loc="AAA", at_current_step=0, st
         at_current_step = 0
 
     current_node = next((node for node in nodes if node.location == current_node_loc), None)
-    print(f"{current_node}")
+    #print(f"{current_node}")
     if current_node is None:
         print("beltegoed is op, spreek je later!")
         return steps_taken
@@ -31,10 +32,10 @@ def goto_zzz(steps_to_take, nodes, current_node_loc="AAA", at_current_step=0, st
     at_current_step += 1
 
     if current_step == "L":
-        print(f"Going to '{current_node.left}'")
+        #print(f"Going to '{current_node.left}'")
         goto_zzz(steps_to_take, nodes, current_node.left, at_current_step=at_current_step, steps_taken=steps_taken)
     elif current_step == "R":
-        print(f"Going to '{current_node.right}'")
+        #print(f"Going to '{current_node.right}'")
         goto_zzz(steps_to_take, nodes, current_node.right, at_current_step=at_current_step, steps_taken=steps_taken)
 
 def day_eight_part_one(filename):
@@ -61,20 +62,18 @@ def day_eight_part_one(filename):
 
     return goto_zzz(steps_to_take, nodes)
 
+#************************* PART TWO ********************************
+def goto_zzz_p2(steps_to_take, nodes, current_node_loc, at_current_step=0, steps_taken=0):
+    if current_node_loc.endswith("Z"):
+        print(f"RETURNING Total steps: {steps_taken}, at instruction: {at_current_step}")
+        return steps_taken, at_current_step
 
-def goto_zzz_p2(steps_to_take, nodes, current_node_loc=[], at_current_step=0, steps_taken=0):
-    if current_node_loc == "ZZZ":
-        print(f"Total steps: {steps_taken}")
-        return steps_taken
-
-    if at_current_step == len(steps_to_take) - 1: # instructies opnieuw uitvoeren
-        at_current_step = 0
-
-    current_node = next([node for node in nodes if node.location == current_node_loc], None)
-    print(f"{current_node}")
+    at_current_step = at_current_step % (len(steps_to_take) - 1) # instructies opnieuw uitvoeren
+    current_node = next((node for node in nodes if node.location == current_node_loc), None)
+    #print(f"{current_node}")
     if current_node is None:
         print("beltegoed is op, spreek je later!")
-        return steps_taken
+        return steps_taken, at_current_step
 
     current_step = steps_to_take[at_current_step]
 
@@ -83,10 +82,30 @@ def goto_zzz_p2(steps_to_take, nodes, current_node_loc=[], at_current_step=0, st
 
     if current_step == "L":
         print(f"Going to '{current_node.left}'")
-        goto_zzz(steps_to_take, nodes, current_node.left, at_current_step=at_current_step, steps_taken=steps_taken)
+        goto_zzz_p2(steps_to_take, nodes, current_node.left, at_current_step=at_current_step, steps_taken=steps_taken)
     elif current_step == "R":
         print(f"Going to '{current_node.right}'")
-        goto_zzz(steps_to_take, nodes, current_node.right, at_current_step=at_current_step, steps_taken=steps_taken)
+        goto_zzz_p2(steps_to_take, nodes, current_node.right, at_current_step=at_current_step, steps_taken=steps_taken)
+
+
+def goto_zzz_p2_v2(steps_to_take, nodes, current_nodes, at_current_step=0, steps_taken=0):
+    all_start_nodes_taken_steps = []
+    steps_taken_from_this_node = 0
+    stopped_at_step = 0
+    for current_node in current_nodes:
+        print(f"Going to z from: {current_node}")
+        steps_taken_from_this_node, stopped_at_step = goto_zzz_p2(steps_to_take, nodes, current_node.location, at_current_step=at_current_step, steps_taken=steps_taken)
+        all_start_nodes_taken_steps.append(steps_taken_from_this_node)
+
+    # ga net zo lang door totdat alle getallen hetzelfde zijn, hetzelfde aantal stappen gezet, want dan pas ben je simultaneous
+    if len(set(all_start_nodes_taken_steps)) == 1:
+        print(f"Total steps: {all_start_nodes_taken_steps[0]}")
+        return all_start_nodes_taken_steps[0]
+    else:
+        # doorgaan vanaf de max steps taken die een node heeft gedaan.
+        print("\n\n\nNOT SIMULTANEOUS\n\n\n")
+        goto_zzz_p2_v2(steps_to_take, nodes, current_nodes, at_current_step=stopped_at_step, steps_taken=max(all_start_nodes_taken_steps))
+
 
 def day_eight_part_two(filename):
     with open(filename, 'r') as f:
@@ -110,11 +129,15 @@ def day_eight_part_two(filename):
 
             nodes.append(node)
 
-    return goto_zzz_p2(steps_to_take, nodes)
+    nodes_starting_with_a = [node for node in nodes if node.location.endswith("A")]
+    for node in nodes_starting_with_a:
+        print(f"Starting with A: {node}")
+    steps = goto_zzz_p2_v2(steps_to_take, nodes, nodes_starting_with_a)
+    return steps
 
 filename = "D:/git/magic/aoc2023/aoc2023/src/eight/input.txt"
 #ans1 = day_eight_part_one(filename)
 #print(f"Part one {ans1}")
 
-#ans2 = day_eight_part_two(filename)
-#print(f"Part two {ans2}")
+ans2 = day_eight_part_two(filename)
+print(f"Part two {ans2}")
